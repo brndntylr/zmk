@@ -84,13 +84,22 @@ void mouse_timer_unref() {
 
 static void listener_mouse_move_pressed(const struct zmk_mouse_move_state_changed *ev) {
     move_speed.x += ev->max_speed.x;
-    move_speed.y += ev->max_speed.y;
+    // HACK: give me hit box socd
+    if (move_speed.y == 0) {
+        move_speed.y += ev->max_speed.y;
+    } else if (move_speed.y > 0 && ev->max_speed.y < 0) {
+        move_speed.y = ev->max_speed.y;
+    }
     mouse_timer_ref();
 }
 
 static void listener_mouse_move_released(const struct zmk_mouse_move_state_changed *ev) {
     move_speed.x -= ev->max_speed.x;
-    move_speed.y -= ev->max_speed.y;
+    if (move_speed.y == 0) {
+        move_speed.y -= ev->max_speed.y;
+    } else if (move_speed.y < 0 && ev->max_speed.y < 0) {
+        move_speed.y = -ev->max_speed.y;
+    }
     mouse_timer_unref();
 }
 
